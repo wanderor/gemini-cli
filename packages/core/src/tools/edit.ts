@@ -240,24 +240,19 @@ Expectation for required parameters:
           type: ToolErrorType.ATTEMPT_TO_CREATE_EXISTING_FILE,
         };
       } else if (occurrences === 0) {
-        //DBG
-        let dbg5 = countOccurrences(currentContent, finalNewString);
-        if (dbg5 > 0 && dbg5 == expectedReplacements) {
-
-        error = {
-          display: `No changes to apply. The old_string and new_string are identical.`,
-          raw: `No changes to apply. The old_string and new_string are identical in file: ${params.file_path}\n[DBG 50]`,
-          type: ToolErrorType.EDIT_NO_CHANGE,
-        };
+        let newOccurrences = countOccurrences(currentContent, finalNewString);
+        if (newOccurrences === expectedReplacements) {
+          error = {
+            display: `No changes to apply. Apparently the new_string has been applied.`,
+            raw: `No changes to apply. Apparently the new_string has been applied in file: ${params.file_path}`,
+            type: ToolErrorType.EDIT_NO_CHANGE,
+          };
         } else {
-        let dbg2 = countOccurrences(currentContent.replace(/\s+/g, '~'), finalOldString.replace(/\s+/g, '~'));
-        let dbg3 = countOccurrences(currentContent.trim(), finalOldString.trim());
-
-        error = {
-          display: `Failed to edit, could not find the string to replace.`,
-          raw: `Failed to edit, 0 occurrences found for old_string in ${params.file_path}. No edits made. The exact text in old_string was not found. Ensure you're not escaping content incorrectly and check whitespace, indentation, and context. Use ${ReadFileTool.Name} tool to verify.\n[${dbg2}] occurrences if ignoring spaces\n[${dbg3}] occurrences if trimming spaces\nOLD: [${finalOldString.replace(/\s+/g, '~')}]\nNEW: [${finalNewString.replace(/\s+/g, '~')}]`,
-          type: ToolErrorType.EDIT_NO_OCCURRENCE_FOUND,
-        };
+          error = {
+            display: `Failed to edit, could not find the string to replace.`,
+            raw: `Failed to edit, 0 occurrences found for old_string in ${params.file_path}. No edits made. The exact text in old_string was not found. Ensure you're not escaping content incorrectly and check whitespace, indentation, and context. Use ${ReadFileTool.Name} tool to verify.`,
+            type: ToolErrorType.EDIT_NO_OCCURRENCE_FOUND,
+          };
         }
       } else if (occurrences !== expectedReplacements) {
         const occurrenceTerm =
