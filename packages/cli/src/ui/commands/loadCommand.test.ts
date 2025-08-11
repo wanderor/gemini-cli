@@ -361,13 +361,13 @@ describe('loadCommand', () => {
 
       expect(result).toEqual([
         {
-          label: 'test-project-archive-1.tar.gz',
-          value: 'test-project-archive-1.tar.gz',
+          label: 'test-project-archive-2.tar.gz',
+          value: 'test-project-archive-2.tar.gz',
           description: '',
         },
         {
-          label: 'test-project-archive-2.tar.gz',
-          value: 'test-project-archive-2.tar.gz',
+          label: 'test-project-archive-1.tar.gz',
+          value: 'test-project-archive-1.tar.gz',
           description: '',
         },
       ]);

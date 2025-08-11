@@ -260,6 +260,7 @@ async function completion(
     const filteredArchives = archives.filter((archive) =>
       archive.filename.startsWith(`${projectName}-archive-`),
     );
+    filteredArchives.sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
     return filteredArchives.map((archive) => ({
       label: archive.filename,
       value: archive.filename,
