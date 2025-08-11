@@ -101,13 +101,12 @@ import { isNarrowWidth } from './utils/isNarrowWidth.js';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
-
 ////////////////////////////////////////////////////////////////
 // Begin sound helpers
 
 import Speaker from 'speaker';
 
-let _speaker_instance : Speaker | null = null;
+let _speaker_instance: Speaker | null = null;
 
 const getSpeaker = (sampleRate: number) => {
   if (_speaker_instance === null) {
@@ -123,15 +122,15 @@ const getSpeaker = (sampleRate: number) => {
     }
   }
   return _speaker_instance;
-}
+};
 
 const playTone = (frequencyHz: number, durationMs: number) => {
   const sampleRate = 44100;
   const amplitude = 0.2;
 
   // Creates a tone.
-  const numSamples = sampleRate * durationMs / 1000;
-  const buffer = Buffer.alloc(numSamples * 2);  // 16-bit
+  const numSamples = (sampleRate * durationMs) / 1000;
+  const buffer = Buffer.alloc(numSamples * 2); // 16-bit
   for (let i = 0; i < numSamples; i++) {
     const t = i / sampleRate;
     const value = amplitude * Math.sin(2 * Math.PI * frequencyHz * t);
@@ -147,7 +146,7 @@ const playTone = (frequencyHz: number, durationMs: number) => {
   } catch (error) {
     console.error('Error playing tone:', error);
   }
-}
+};
 
 const playMultiTones = (frequenciesHz: number[], durationMs: number) => {
   if (frequenciesHz.length > 0) {
@@ -158,7 +157,7 @@ const playMultiTones = (frequenciesHz: number[], durationMs: number) => {
       }, durationMs * 1.2);
     }
   }
-}
+};
 
 const playHintSound = (streamingState: StreamingState) => {
   if (streamingState === StreamingState.Idle) {
@@ -166,11 +165,10 @@ const playHintSound = (streamingState: StreamingState) => {
   } else if (streamingState === StreamingState.WaitingForConfirmation) {
     playMultiTones([220, 165], 300);
   }
-}
+};
 
 // End sound helpers
 ////////////////////////////////////////////////////////////////
-
 
 interface AppProps {
   config: Config;
