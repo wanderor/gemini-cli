@@ -88,6 +88,7 @@
     "yargs": "^17.7.2"
   },
   "dependencies": {
-    "speaker": "^0.5.5"
+    "speaker": "^0.5.5",
+    "tar": "^7.4.3"
   }
 }

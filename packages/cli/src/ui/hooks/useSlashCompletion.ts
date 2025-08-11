@@ -133,7 +133,17 @@ export function useSlashCompletion(props: UseSlashCompletionProps): {
         const argString = rawParts.slice(depth).join(' ');
         const results =
           (await leafCommand!.completion!(commandContext, argString)) || [];
-        const finalSuggestions = results.map((s) => ({ label: s, value: s }));
+        const finalSuggestions = results.map((s) => {
+          if (typeof s === 'string') {
+            return { label: s, value: s };
+          } else {
+            return {
+              label: s.label,
+              value: s.value,
+              description: s.description,
+            };
+          }
+        });
         setSuggestions(finalSuggestions);
         setIsLoadingSuggestions(false);
       };
