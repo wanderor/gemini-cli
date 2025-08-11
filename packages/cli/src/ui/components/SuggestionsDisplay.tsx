@@ -74,7 +74,7 @@ export function SuggestionsDisplay({
             <Box flexDirection="row">
               {userInput.startsWith('/') ? (
                 // only use box model for (/) command mode
-                <Box width={20} flexShrink={0}>
+                <Box width={32} flexShrink={0} paddingRight={4}>
                   {labelElement}
                 </Box>
               ) : (

@@ -4,10 +4,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { vi, describe, it, expect, beforeEach, afterEach, type Mock, type Mocked } from 'vitest';
+import {
+  vi,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  type Mock,
+} from 'vitest';
 import * as os from 'os';
 import * as path from 'path';
-import { loadCommand, ARCHIVES_DIR_NAME, ARCHIVE_METADATA_FILE } from './loadCommand.js';
+import {
+  loadCommand,
+  ARCHIVES_DIR_NAME,
+  ARCHIVE_METADATA_FILE,
+} from './loadCommand.js';
 import { type CommandContext } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 import { Config } from '@google/gemini-cli-core';
@@ -42,6 +54,7 @@ vi.mock('fs/promises', async (importOriginal) => {
     rename: vi.fn(),
     mkdtemp: vi.fn(),
     readdir: vi.fn(),
+    cp: vi.fn(),
   };
 });
 
@@ -62,6 +75,7 @@ describe('loadCommand', () => {
   let mockRename: Mock;
   let mockReaddir: Mock;
   let mockTarExtract: Mock;
+  let mockCp: Mock;
 
   beforeEach(async () => {
     const mockTempDir = path.join(os.tmpdir(), 'load-command-test-mocked-dir');
@@ -73,6 +87,7 @@ describe('loadCommand', () => {
     mockRename = vi.mocked(fs.rename);
     mockReaddir = vi.mocked(fs.readdir);
     mockTarExtract = vi.mocked(tar.extract);
+    mockCp = vi.mocked(fs.cp);
 
     mockMkdtemp.mockResolvedValue(mockTempDir);
     testRootDir = mockTempDir;
@@ -253,7 +268,11 @@ describe('loadCommand', () => {
         expect.stringContaining(tempDirPrefix),
       );
       expect(mockTarExtract).toHaveBeenCalledWith({
-        file: path.join(mockConfig.getProjectTempDir(), ARCHIVES_DIR_NAME, selectedArchiveFilename),
+        file: path.join(
+          mockConfig.getProjectTempDir(),
+          ARCHIVES_DIR_NAME,
+          selectedArchiveFilename,
+        ),
         cwd: tempDirPrefix + 'temp123',
       });
       expect(mockRm).toHaveBeenCalledWith(path.join(projectRoot, 'file1.txt'), {
@@ -264,13 +283,23 @@ describe('loadCommand', () => {
         recursive: true,
         force: true,
       });
-      expect(mockRename).toHaveBeenCalledWith(
+      expect(mockCp).toHaveBeenCalledWith(
         path.join(tempDirPrefix + 'temp123', 'extracted_file.txt'),
         path.join(projectRoot, 'extracted_file.txt'),
+        { recursive: true },
       );
-      expect(mockRename).toHaveBeenCalledWith(
+      expect(mockRm).toHaveBeenCalledWith(
+        path.join(tempDirPrefix + 'temp123', 'extracted_file.txt'),
+        { recursive: true, force: true },
+      );
+      expect(mockCp).toHaveBeenCalledWith(
         path.join(tempDirPrefix + 'temp123', 'extracted_dir'),
         path.join(projectRoot, 'extracted_dir'),
+        { recursive: true },
+      );
+      expect(mockRm).toHaveBeenCalledWith(
+        path.join(tempDirPrefix + 'temp123', 'extracted_dir'),
+        { recursive: true, force: true },
       );
       expect(mockRm).toHaveBeenCalledWith(tempDirPrefix + 'temp123', {
         recursive: true,

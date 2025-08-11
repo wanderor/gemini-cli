@@ -92,7 +92,8 @@ async function loadAction(
     selectedFile = ''; // No filename provided
   }
 
-  if (!selectedFile) { // If no filename is provided, display archives
+  if (!selectedFile) {
+    // If no filename is provided, display archives
     try {
       const archives = await readArchiveMetadata(archivesDir); // Use new function
       const projectName = path.basename(config.getProjectRoot() || 'project');
@@ -148,7 +149,8 @@ async function loadAction(
       }
 
       // Check for --force argument
-      if (!forceConfirm) { // Use the parsed forceConfirm
+      if (!forceConfirm) {
+        // Use the parsed forceConfirm
         return {
           type: 'message',
           messageType: 'error',
@@ -183,10 +185,10 @@ async function loadAction(
         // Move extracted contents to project root
         const extractedContents = await fs.readdir(tempDir);
         for (const item of extractedContents) {
-          await fs.rename(
-            path.join(tempDir, item),
-            path.join(projectRoot, item),
-          );
+          const sourcePath = path.join(tempDir, item);
+          const destinationPath = path.join(projectRoot, item);
+          await fs.cp(sourcePath, destinationPath, { recursive: true });
+          await fs.rm(sourcePath, { recursive: true, force: true });
         }
 
         return {
@@ -231,7 +233,7 @@ async function loadAction(
     return {
       type: 'message',
       messageType: 'error',
-      content: `Error loading archive '${args}': ${_error}`,
+      content: `Error loading archive ${selectedFile}: ${_error}`,
     };
   }
 }
