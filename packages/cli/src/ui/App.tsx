@@ -101,6 +101,77 @@ import { isNarrowWidth } from './utils/isNarrowWidth.js';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
+
+////////////////////////////////////////////////////////////////
+// Begin sound helpers
+
+import Speaker from 'speaker';
+
+let _speaker_instance : Speaker | null = null;
+
+const getSpeaker = (sampleRate: number) => {
+  if (_speaker_instance === null) {
+    try {
+      const speaker = new Speaker({
+        channels: 1,
+        bitDepth: 16,
+        sampleRate,
+      });
+      _speaker_instance = speaker;
+    } catch (error) {
+      console.error('Error initializing speaker:', error);
+    }
+  }
+  return _speaker_instance;
+}
+
+const playTone = (frequencyHz: number, durationMs: number) => {
+  const sampleRate = 44100;
+  const amplitude = 0.2;
+
+  // Creates a tone.
+  const numSamples = sampleRate * durationMs / 1000;
+  const buffer = Buffer.alloc(numSamples * 2);  // 16-bit
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / sampleRate;
+    const value = amplitude * Math.sin(2 * Math.PI * frequencyHz * t);
+    buffer.writeInt16LE(Math.floor(32767 * value), i * 2);
+  }
+
+  // Plays the tone.
+  try {
+    const speaker = getSpeaker(sampleRate);
+    if (speaker !== null) {
+      speaker.write(buffer);
+    }
+  } catch (error) {
+    console.error('Error playing tone:', error);
+  }
+}
+
+const playMultiTones = (frequenciesHz: number[], durationMs: number) => {
+  if (frequenciesHz.length > 0) {
+    playTone(frequenciesHz[0], durationMs);
+    if (frequenciesHz.length > 1) {
+      setTimeout(() => {
+        playMultiTones(frequenciesHz.slice(1), durationMs);
+      }, durationMs * 1.2);
+    }
+  }
+}
+
+const playHintSound = (streamingState: StreamingState) => {
+  if (streamingState === StreamingState.Idle) {
+    playMultiTones([880, 1046], 100);
+  } else if (streamingState === StreamingState.WaitingForConfirmation) {
+    playMultiTones([220, 165], 300);
+  }
+}
+
+// End sound helpers
+////////////////////////////////////////////////////////////////
+
+
 interface AppProps {
   config: Config;
   settings: LoadedSettings;
@@ -785,6 +856,14 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
       refreshStatic();
     }
   }, [streamingState, refreshStatic, staticNeedsRefresh]);
+
+  const prevStreamingStateRef = useRef<StreamingState>(streamingState);
+  useEffect(() => {
+    if (prevStreamingStateRef.current !== streamingState) {
+      playHintSound(streamingState);
+      prevStreamingStateRef.current = streamingState;
+    }
+  }, [streamingState]);
 
   const filteredConsoleMessages = useMemo(() => {
     if (config.getDebugMode()) {
